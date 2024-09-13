@@ -164,7 +164,6 @@ function Loop:begin()
 				}, function()
 					debug.profilebegin("system: " .. system.name)
 
-					local commitFailed = false
 					local thread = coroutine.create(function(...)
 						self._reporter:run(system.jabbyId, system.callback)
 					end)
@@ -177,7 +176,7 @@ function Loop:begin()
 						task.spawn(
 							error,
 							(
-								"jecsmatters: System %s yielded! Its thread has been closed. "
+								"jam: System %s yielded! Its thread has been closed. "
 								.. "Yielding in systems is not allowed."
 							):format(systemName(system))
 						)
@@ -189,20 +188,11 @@ function Loop:begin()
 							recentErrors = {}
 						end
 
-						local errorString = system.name
-							.. ": "
-							.. (
-								if commitFailed
-									-- Strip irrelevant line numbers that point to Loop / World
-									then string.gsub(errorValue, "%[.+%]:%d+: ", "Failed to apply commands: ")
-									else errorValue
-							)
-							.. "\n"
-							.. debug.traceback(thread)
+						local errorString = system.name .. ": " .. "\n" .. debug.traceback(thread)
 
 						if not recentErrors[errorString] then
 							task.spawn(error, errorString)
-							warn("jecsmatters: The above error will be suppressed for the next 10 seconds")
+							warn("jam: The above error will be suppressed for the next 10 seconds")
 							recentErrors[errorString] = true
 						end
 					end
