@@ -1,2 +1,2 @@
 # jam
-jecs and matter jammed together as jam frankensteins the topographic runtime from [Matter](https://github.com/matter-ecs/matter) to work with [jecs](https://github.com/ukendio/jecs) and [jabby](https://github.com/alicesaidhi/jabby) so that you can use and make hooks (includes a scheduler that works with jabby and supports the topo runtime)
+Jecs and Matter jammed together as Jam frankensteins the topographic runtime from [Matter](https://github.com/matter-ecs/matter) to work with [Jecs](https://github.com/ukendio/jecs) and [Jabby](https://github.com/alicesaidhi/jabby) so that you can use and make hooks (includes a scheduler that works with Jabby and supports the topo runtime)
