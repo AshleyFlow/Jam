@@ -102,8 +102,8 @@ end
 	for _, player in ipairs(Players:GetPlayers()) do
 		for i, character in useEvent(player, "CharacterAdded") do
 			world:spawn(
-				Components.Target(),
-				Components.Model({
+				components.Target(),
+				components.Model({
 					model = character,
 				})
 			)

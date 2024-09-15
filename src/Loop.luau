@@ -1,11 +1,12 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local IS_CLIENT = RunService:IsClient()
 
-local jecs = require(script.Parent.Parent.jecs)
-local jabby = require(script.Parent.Parent.jabby)
+local Jecs = require(ReplicatedStorage.Packages.Jecs)
+local Jabby = require(ReplicatedStorage.Packages.Jabby)
 
-local pair = jecs.pair
+local pair = Jecs.pair
 local topoRuntime = require(script.Parent.topoRuntime)
 
 local Loop = {}
@@ -27,26 +28,28 @@ local function systemName(system)
 	return debug.info(fn, "s") .. "->" .. debug.info(fn, "n")
 end
 
-function Loop.new(name, ...)
+function Loop.new(params: { name: string, debug: any, world: any }, ...)
 	local self = setmetatable({}, Loop)
 
-	self._name = name
+	self._name = params.name
+	self._debug = params.debug or Jecs.Name
 	self._running = false
 
 	self._state = { ... }
 	self._stateLength = select("#", ...)
 
-	self._world = jecs.World.new()
-	self._reporter = jabby.scheduler.create(name)
+	self._world = params.world
+	self._reporter = Jabby.scheduler.create(self._name .. "-scheduler")
+	Jabby.public.updated = true
 
-	table.insert(jabby.public, {
-		class_name = "World",
+	table.insert(Jabby.public, {
+		name = self._name .. "-world",
 		world = self._world,
-		name = name .. "-world",
-		debug = jecs.Name,
+		debug = self._debug,
+		class_name = "World",
 	})
 
-	table.insert(jabby.public, self._reporter)
+	table.insert(Jabby.public, self._reporter)
 
 	self._components = {
 		Event = self._world:component(),
@@ -56,11 +59,11 @@ function Loop.new(name, ...)
 		DependsOn = self._world:component(),
 	}
 
-	self._world:set(self._components.Event, jecs.Name, "Event")
-	self._world:set(self._components.Phase, jecs.Name, "Phase")
-	self._world:set(self._components.System, jecs.Name, "System")
-	self._world:set(self._components.Disabled, jecs.Name, "Disabled")
-	self._world:set(self._components.DependsOn, jecs.Name, "DependsOn")
+	self._world:set(self._components.Event, self._debug, "Event")
+	self._world:set(self._components.Phase, self._debug, "Phase")
+	self._world:set(self._components.System, self._debug, "System")
+	self._world:set(self._components.Disabled, self._debug, "Disabled")
+	self._world:set(self._components.DependsOn, self._debug, "DependsOn")
 
 	self.phases = {
 		RenderStepped = self._world:component(),
@@ -72,20 +75,20 @@ function Loop.new(name, ...)
 	if IS_CLIENT then
 		self._world:add(self.phases.RenderStepped, self._components.Phase)
 		self._world:set(self.phases.RenderStepped, self._components.Event, RunService.RenderStepped)
-		self._world:set(self.phases.RenderStepped, jecs.Name, "RenderStepped")
+		self._world:set(self.phases.RenderStepped, self._debug, "RenderStepped")
 	end
 
 	self._world:add(self.phases.Heartbeat, self._components.Phase)
 	self._world:set(self.phases.Heartbeat, self._components.Event, RunService.Heartbeat)
-	self._world:set(self.phases.Heartbeat, jecs.Name, "Heartbeat")
+	self._world:set(self.phases.Heartbeat, self._debug, "Heartbeat")
 
 	self._world:add(self.phases.PreSimulation, self._components.Phase)
 	self._world:set(self.phases.PreSimulation, self._components.Event, RunService.PreSimulation)
-	self._world:set(self.phases.PreSimulation, jecs.Name, "PreSimulation")
+	self._world:set(self.phases.PreSimulation, self._debug, "PreSimulation")
 
 	self._world:add(self.phases.PreAnimation, self._components.Phase)
 	self._world:set(self.phases.PreAnimation, self._components.Event, RunService.PreAnimation)
-	self._world:set(self.phases.PreAnimation, jecs.Name, "PreAnimation")
+	self._world:set(self.phases.PreAnimation, self._debug, "PreAnimation")
 
 	return self
 end
@@ -121,20 +124,19 @@ function Loop:phase(after)
 	return phase
 end
 
-function Loop:schedule(system)
+function Loop:schedule(system, phase)
 	local id = self._world:entity()
 	local name = systemName(system)
-	local phase = typeof(system) == "table" and system.phase or self.phases.Heartbeat
 	local callback = systemFn(system)
 
 	self._world:set(id, self._components.System, {
 		name = name,
-		callback = callback,
 		state = {},
+		callback = callback,
 		jabbyId = self._reporter:register_system({ name = name }),
 	})
 
-	self._world:add(id, pair(self._components.DependsOn, phase))
+	self._world:add(id, pair(self._components.DependsOn, phase or self.phases.Heartbeat))
 
 	return system
 end
@@ -164,6 +166,7 @@ function Loop:begin()
 				}, function()
 					debug.profilebegin("system: " .. system.name)
 
+					local commitFailed = false
 					local thread = coroutine.create(function(...)
 						self._reporter:run(system.jabbyId, system.callback)
 					end)
@@ -173,13 +176,7 @@ function Loop:begin()
 					if coroutine.status(thread) ~= "dead" then
 						coroutine.close(thread)
 
-						task.spawn(
-							error,
-							(
-								"jam: System %s yielded! Its thread has been closed. "
-								.. "Yielding in systems is not allowed."
-							):format(systemName(system))
-						)
+						task.spawn(error, ("Jam: System %s yielded! Its thread has been closed. " .. "Yielding in systems is not allowed."):format(systemName(system)))
 					end
 
 					if not success then
@@ -188,11 +185,20 @@ function Loop:begin()
 							recentErrors = {}
 						end
 
-						local errorString = system.name .. ": " .. "\n" .. debug.traceback(thread)
+						local errorString = system.name
+							.. ": "
+							.. (
+								if commitFailed
+									-- Strip irrelevant line numbers that point to Loop / World
+									then string.gsub(errorValue, "%[.+%]:%d+: ", "Failed to apply commands: ")
+									else errorValue
+							)
+							.. "\n"
+							.. debug.traceback(thread)
 
 						if not recentErrors[errorString] then
 							task.spawn(error, errorString)
-							warn("jam: The above error will be suppressed for the next 10 seconds")
+							warn("Jam: The above error will be suppressed for the next 10 seconds")
 							recentErrors[errorString] = true
 						end
 					end
