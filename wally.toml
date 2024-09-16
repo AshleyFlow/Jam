@@ -1,9 +1,9 @@
 [package]
 name = "revvy02/jam"
-version = "0.1.1"
+version = "0.1.2"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
 [dependencies]
-jabby = "alicesaidhi/jabby@0.1.0"
-jecs = "ukendio/jecs@0.2.10"
+Jabby = "alicesaidhi/jabby@0.1.0"
+Jecs = "ukendio/jecs@0.2.10"

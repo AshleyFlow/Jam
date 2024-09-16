@@ -3,8 +3,8 @@ local RunService = game:GetService("RunService")
 
 local IS_CLIENT = RunService:IsClient()
 
-local Jecs = require(ReplicatedStorage.Packages.Jecs)
-local Jabby = require(ReplicatedStorage.Packages.Jabby)
+local Jecs = require(script.Parent.Parent.Jecs)
+local Jabby = require(script.Parent.Parent.Jabby)
 
 local pair = Jecs.pair
 local topoRuntime = require(script.Parent.topoRuntime)
@@ -176,7 +176,13 @@ function Loop:begin()
 					if coroutine.status(thread) ~= "dead" then
 						coroutine.close(thread)
 
-						task.spawn(error, ("Jam: System %s yielded! Its thread has been closed. " .. "Yielding in systems is not allowed."):format(systemName(system)))
+						task.spawn(
+							error,
+							(
+								"Jam: System %s yielded! Its thread has been closed. "
+								.. "Yielding in systems is not allowed."
+							):format(systemName(system))
+						)
 					end
 
 					if not success then
