@@ -175,7 +175,7 @@ function Loop:begin()
 
 					local commitFailed = false
 					local thread = coroutine.create(function(...)
-						self._reporter:run(system.jabbyId, system.callback)
+						self._reporter:run(system.jabbyId, system.callback, ...)
 					end)
 
 					local success, errorValue = coroutine.resume(thread, unpack(self._state, 1, self._stateLength))
