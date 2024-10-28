@@ -5,7 +5,7 @@ export type Entity<T> = number & {
 	__T: T,
 }
 
-export type System = { system: () -> (), name: string } | () -> ()
+export type System<T...> = { system: (T...) -> (), name: string } | (T...) -> ()
 
 export type Loop<T...> = {
 	phases: {
@@ -15,7 +15,7 @@ export type Loop<T...> = {
 		PreAnimation: Entity<number>,
 	},
 	phase: (after: Entity<number>) -> Entity<number>,
-	schedule: (self: Loop<T...>, system: System, phase: number?) -> System,
+	schedule: (self: Loop<T...>, system: System<T...>, phase: number?) -> System<T...>,
 	begin: (self: Loop<T...>) -> { [any]: any },
 }
 
