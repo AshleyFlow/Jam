@@ -1,6 +1,6 @@
 [package]
-name = "revvy02/jam"
-version = "0.1.2"
+name = "ashleyflow/jam"
+version = "1.0.0"
 registry = "https://github.com/UpliftGames/wally-index"
 realm = "shared"
 
