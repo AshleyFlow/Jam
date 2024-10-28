@@ -27,7 +27,7 @@ local function systemName(system)
 	return debug.info(fn, "s") .. "->" .. debug.info(fn, "n")
 end
 
-function Loop.new(params: { name: string, debug: any, world: any }, ...)
+function Loop.new(params: { name: string, debug: Jecs.Entity<string>, world: Jecs.World }, ...)
 	local self = setmetatable({}, Loop)
 
 	self._name = params.name
@@ -123,7 +123,7 @@ function Loop:phase(after)
 	return phase
 end
 
-function Loop:schedule(system, phase)
+function Loop.schedule(self: any, system: any, phase: number?)
 	local id = self._world:entity()
 	local name = systemName(system)
 	local callback = systemFn(system)
@@ -140,7 +140,7 @@ function Loop:schedule(system, phase)
 	return system
 end
 
-function Loop:begin()
+function Loop.begin(self: any)
 	assert(not self._running, string.format("Loop (%s) is already running!", self._name))
 
 	self._running = true
