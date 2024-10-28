@@ -1,4 +1,3 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local IS_CLIENT = RunService:IsClient()
@@ -32,7 +31,7 @@ function Loop.new(params: { name: string, debug: any, world: any }, ...)
 	local self = setmetatable({}, Loop)
 
 	self._name = params.name
-	self._debug = params.debug or Jecs.Name
+	self._debug = params.debug
 	self._running = false
 
 	self._state = { ... }
