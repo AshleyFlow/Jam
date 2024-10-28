@@ -82,6 +82,13 @@ end
 	A connection object returned by a custom event must be either a table with any of the following methods, or a cleanup function.
 ]=]
 
+type ConnectionObject = {
+	Disconnect: (() -> ())?,
+	Destroy: (() -> ())?,
+	disconnect: (() -> ())?,
+	destroy: (() -> ())?,
+} | () -> ()
+
 --[=[
 	@interface CustomEvent
 	@within Matter
@@ -91,6 +98,12 @@ end
 
 	A custom event must have any of these 3 methods.
 ]=]
+
+type CustomEvent = {
+	Connect: ((...any) -> ConnectionObject)?,
+	on: ((...any) -> ConnectionObject)?,
+	connect: ((...any) -> ConnectionObject)?,
+}
 
 --[=[
 	@within Matter
@@ -157,7 +170,10 @@ end
 	@param instance Instance | { [string]: CustomEvent } | CustomEvent -- The instance or the custom event, or a table that has the event you want to connect to
 	@param event string | RBXScriptSignal | CustomEvent -- The name of, or the actual event that you want to connect to
 ]=]
-local function useEvent(instance: Instance, event: string): () -> (number, ...any)
+local function useEvent(
+	instance: Instance | { [string]: CustomEvent } | CustomEvent,
+	event: string | RBXScriptSignal | CustomEvent
+): () -> (number, ...any)
 	assert(instance ~= nil, "Instance is nil")
 	assert(event ~= nil, "Event is nil")
 
