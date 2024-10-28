@@ -4,6 +4,7 @@ local IS_CLIENT = RunService:IsClient()
 
 local Jecs = require(script.Parent.Parent.Jecs)
 local Jabby = require(script.Parent.Parent.Jabby)
+local Types = require(script.Parent.Types)
 
 local pair = Jecs.pair
 local topoRuntime = require(script.Parent.topoRuntime)
@@ -27,7 +28,7 @@ local function systemName(system)
 	return debug.info(fn, "s") .. "->" .. debug.info(fn, "n")
 end
 
-function Loop.new(params: { name: string, debug: Jecs.Entity<string>, world: Jecs.World }, ...)
+function Loop.new(params: { name: string, debug: Jecs.Entity<string>, world: Jecs.World }, ...): Types.Loop
 	local self = setmetatable({}, Loop)
 
 	self._name = params.name
