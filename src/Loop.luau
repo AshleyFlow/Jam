@@ -23,7 +23,11 @@ local function systemFn(system)
 	return system
 end
 
-local function systemName(system)
+local function systemName(system: Types.System)
+	if typeof(system) == "table" then
+		return system.name
+	end
+
 	local fn = systemFn(system)
 	return debug.info(fn, "s") .. "->" .. debug.info(fn, "n")
 end
