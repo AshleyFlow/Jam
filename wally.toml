@@ -6,4 +6,4 @@ realm = "shared"
 
 [dependencies]
 Jabby = "alicesaidhi/jabby@0.1.0"
-Jecs = "ukendio/jecs@0.2.10"
+Jecs = "ukendio/jecs@0.3.2"
