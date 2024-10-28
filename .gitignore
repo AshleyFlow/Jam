@@ -1,4 +1,6 @@
 # Wally files
 DevPackages
 Packages
-wally.lock
+
+# Rojo files
+sourcemap.json

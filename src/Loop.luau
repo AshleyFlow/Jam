@@ -1,10 +1,10 @@
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
 local IS_CLIENT = RunService:IsClient()
 
 local Jecs = require(script.Parent.Parent.Jecs)
 local Jabby = require(script.Parent.Parent.Jabby)
+local Types = require(script.Parent.Types)
 
 local pair = Jecs.pair
 local topoRuntime = require(script.Parent.topoRuntime)
@@ -28,14 +28,14 @@ local function systemName(system)
 	return debug.info(fn, "s") .. "->" .. debug.info(fn, "n")
 end
 
-function Loop.new(params: { name: string, debug: any, world: any }, ...)
+function Loop.new<T...>(params: { name: string, debug: Jecs.Entity<string>, world: Jecs.World }, ...: T...): Types.Loop<T...>
 	local self = setmetatable({}, Loop)
 
 	self._name = params.name
-	self._debug = params.debug or Jecs.Name
+	self._debug = params.debug
 	self._running = false
 
-	self._state = { ... }
+	self._state = table.pack(...)
 	self._stateLength = select("#", ...)
 
 	self._world = params.world
@@ -124,7 +124,7 @@ function Loop:phase(after)
 	return phase
 end
 
-function Loop:schedule(system, phase)
+function Loop.schedule<T...>(self: Types.Loop<T...>, system: Types.System, phase: number?)
 	local id = self._world:entity()
 	local name = systemName(system)
 	local callback = systemFn(system)
@@ -141,7 +141,7 @@ function Loop:schedule(system, phase)
 	return system
 end
 
-function Loop:begin()
+function Loop.begin<T...>(self: Types.Loop<T...>)
 	assert(not self._running, string.format("Loop (%s) is already running!", self._name))
 
 	self._running = true
