@@ -25,6 +25,9 @@ local function systemFn(system)
 end
 
 local function systemName(system)
+	if typeof(system) == "table" then
+		return system.name
+	end
 	local fn = systemFn(system)
 	return debug.info(fn, "s") .. "->" .. debug.info(fn, "n")
 end
