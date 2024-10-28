@@ -1,7 +1,7 @@
 local Jabby = require(script.Parent.Parent.Jabby)
 local Jecs = require(script.Parent.Parent.Jecs)
 
-export type System = { system: () -> () } | () -> ()
+export type System = { system: () -> (), name: string } | () -> ()
 
 export type Loop<T...> = {
 	phases: {
